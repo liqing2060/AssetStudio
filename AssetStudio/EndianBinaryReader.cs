@@ -48,6 +48,17 @@ namespace AssetStudio
             return base.ReadInt32();
         }
 
+        public int ReadInt32(EndianType endian)
+        {
+            if (endian == EndianType.BigEndian)
+            {
+                var buff = ReadBytes(4);
+                Array.Reverse(buff);
+                return BitConverter.ToInt32(buff, 0);
+            }
+            return base.ReadInt32();
+        }
+
         public override long ReadInt64()
         {
             if (endian == EndianType.BigEndian)

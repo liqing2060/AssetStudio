@@ -35,6 +35,20 @@ namespace AssetStudio
             return "";
         }
 
+        public static string ReadAlignedString(this EndianBinaryReader reader, EndianType endian)
+        {
+            var length = reader.ReadInt32(endian);
+            if (length > 0 && length <= reader.BaseStream.Length - reader.BaseStream.Position)
+            {
+                if (endian == EndianType.BigEndian) reader.AlignStream(4);
+                var stringData = reader.ReadBytes(length);
+                var result = Encoding.UTF8.GetString(stringData);
+                if (endian == EndianType.LittleEndian) reader.AlignStream(4);
+                return result;
+            }
+            return "";
+        }
+
         public static string ReadStringToNull(this BinaryReader reader, int maxLength = 32767)
         {
             var bytes = new List<byte>();
