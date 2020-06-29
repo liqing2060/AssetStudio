@@ -318,6 +318,85 @@ namespace AssetStudioGUI
             }
         }
 
+        private void recoverBundleMenuItem_Click(object sender, EventArgs e)
+        {
+            if (assetsManager.bundleFiles.Count > 0)
+            {
+                var saveBundlePathDialog = new OpenFileDialog();
+                if (saveBundlePathDialog.ShowDialog(this) == DialogResult.OK)
+                {
+                    var bundlePath = saveBundlePathDialog.FileName;
+                    var count = assetListView.Items.Count;
+                    int i = 0;
+                    Progress.Reset();
+
+                    System.Collections.IList list = assetListView.Items;
+                    for (int i1 = 0; i1 < list.Count; i1++)
+                    {
+                        object item = list[i1];
+                        var assetItem = (AssetItem)item;
+                        if (assetItem?.Asset is AssetBundle)
+                        {
+                            var assetBundle = (AssetBundle)assetItem.Asset;
+                            Console.WriteLine(assetBundle.m_AssetBundleName);
+                        }
+
+                        //var versionPath = bundlePath + "\\" + item.Group.Header;
+                        //Directory.CreateDirectory(versionPath);
+
+                        //var saveFile = $"{versionPath}\\{item.SubItems[1].Text} {item.Text}.txt";
+                        //File.WriteAllText(saveFile, item.ToString());
+
+                        Progress.Report(++i, count);
+                    }
+
+                    StatusStripUpdate($"Finished recover bundle:{bundlePath}");
+                }
+            }
+        }
+
+        private void saveBundleMenuItem_Click(object sender, EventArgs e)
+        {
+            if (assetsManager.bundleFiles.Count > 0)
+            {
+                var saveBundlePathDialog = new SaveFileDialog();
+                if (saveBundlePathDialog.ShowDialog(this) == DialogResult.OK)
+                {
+                    var bundlePath = saveBundlePathDialog.FileName;
+                    var count = assetsManager.bundleFiles.Count;
+                    int i = 0;
+                    Progress.Reset();
+
+                    using (var fileStream = new FileStream(bundlePath, FileMode.Create))
+                    {
+                        using (var writer = new EndianBinaryWriter(fileStream, EndianType.BigEndian))
+                        {
+                            System.Collections.IList list = assetsManager.bundleFiles;
+                            for (int i1 = 0; i1 < list.Count; i1++)
+                            {
+                                object item = list[i1];
+                                var bundleFile = (BundleFile)item;
+                                if (bundleFile != null)
+                                {
+                                    bundleFile.Write(writer);
+                                }
+
+                                //var versionPath = bundlePath + "\\" + item.Group.Header;
+                                //Directory.CreateDirectory(versionPath);
+
+                                //var saveFile = $"{versionPath}\\{item.SubItems[1].Text} {item.Text}.txt";
+                                //File.WriteAllText(saveFile, item.ToString());
+
+                                Progress.Report(++i, count);
+                            }
+                        }
+                    }
+
+                    StatusStripUpdate($"Finished recover bundle:{bundlePath}");
+                }
+            }
+        }
+
         private void displayAll_CheckedChanged(object sender, EventArgs e)
         {
             Properties.Settings.Default.displayAll = displayAll.Checked;

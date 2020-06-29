@@ -68,6 +68,8 @@
             this.allToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.debugMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exportClassStructuresMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.recoverBundleMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveBundleMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
@@ -436,7 +438,9 @@
             // debugMenuItem
             // 
             this.debugMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.exportClassStructuresMenuItem});
+            this.exportClassStructuresMenuItem,
+            this.recoverBundleMenuItem,
+            this.saveBundleMenuItem});
             this.debugMenuItem.Name = "debugMenuItem";
             this.debugMenuItem.Size = new System.Drawing.Size(59, 21);
             this.debugMenuItem.Text = "Debug";
@@ -447,6 +451,20 @@
             this.exportClassStructuresMenuItem.Size = new System.Drawing.Size(207, 22);
             this.exportClassStructuresMenuItem.Text = "Export class structures";
             this.exportClassStructuresMenuItem.Click += new System.EventHandler(this.exportClassStructuresMenuItem_Click);
+            // 
+            // recoverBundleMenuItem
+            // 
+            this.recoverBundleMenuItem.Name = "recoverBundleMenuItem";
+            this.recoverBundleMenuItem.Size = new System.Drawing.Size(207, 22);
+            this.recoverBundleMenuItem.Text = "Recover Bundle";
+            this.recoverBundleMenuItem.Click += new System.EventHandler(this.recoverBundleMenuItem_Click);
+            // 
+            // saveBundleMenuItem
+            // 
+            this.saveBundleMenuItem.Name = "saveBundleMenuItem";
+            this.saveBundleMenuItem.Size = new System.Drawing.Size(207, 22);
+            this.saveBundleMenuItem.Text = "Save Bundle";
+            this.saveBundleMenuItem.Click += new System.EventHandler(this.saveBundleMenuItem_Click);
             // 
             // splitContainer1
             // 
@@ -1060,6 +1078,8 @@
         private System.Windows.Forms.Panel classPreviewPanel;
         private System.Windows.Forms.TextBox classTextBox;
         private System.Windows.Forms.ToolStripMenuItem exportClassStructuresMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem recoverBundleMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem saveBundleMenuItem;
         private System.Windows.Forms.Label FMODcopyright;
         private OpenTK.GLControl glControl1;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;

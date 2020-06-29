@@ -15,6 +15,7 @@ namespace AssetStudio
         private List<string> importFiles = new List<string>();
         private HashSet<string> importFilesHash = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         private HashSet<string> assetsFileListHash = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        public List<BundleFile> bundleFiles = new List<BundleFile>();
 
         public void LoadFiles(params string[] files)
         {
@@ -34,6 +35,7 @@ namespace AssetStudio
 
         private void Load(string[] files)
         {
+            bundleFiles.Clear();
             foreach (var file in files)
             {
                 importFiles.Add(file);
@@ -120,7 +122,7 @@ namespace AssetStudio
             }
         }
 
-        private void LoadAssetsFromMemory(string fullName, EndianBinaryReader reader, string originalPath, string unityVersion = null)
+        private SerializedFile LoadAssetsFromMemory(string fullName, EndianBinaryReader reader, string originalPath, string unityVersion = null)
         {
             var fileName = Path.GetFileName(fullName);
             if (!assetsFileListHash.Contains(fileName))
@@ -135,6 +137,7 @@ namespace AssetStudio
                     }
                     assetsFileList.Add(assetsFile);
                     assetsFileListHash.Add(assetsFile.fileName);
+                    return assetsFile;
                 }
                 catch
                 {
@@ -142,6 +145,7 @@ namespace AssetStudio
                     resourceFileReaders.Add(fileName, reader);
                 }
             }
+            return null;
         }
 
         private void LoadBundleFile(string fullName, EndianBinaryReader reader, string parentPath = null)
@@ -151,13 +155,15 @@ namespace AssetStudio
             try
             {
                 var bundleFile = new BundleFile(reader, fullName);
+                bundleFiles.Add(bundleFile);
                 foreach (var file in bundleFile.fileList)
                 {
                     var subReader = new EndianBinaryReader(file.stream);
                     if (SerializedFile.IsSerializedFile(subReader))
                     {
                         var dummyPath = Path.GetDirectoryName(fullName) + Path.DirectorySeparatorChar + file.fileName;
-                        LoadAssetsFromMemory(dummyPath, subReader, parentPath ?? fullName, bundleFile.m_Header.unityRevision);
+                        var assetFile = LoadAssetsFromMemory(dummyPath, subReader, parentPath ?? fullName, bundleFile.m_Header.unityRevision);
+                        if (assetFile != null) bundleFile.assetFiles.Add(assetFile);
                     }
                     else
                     {
