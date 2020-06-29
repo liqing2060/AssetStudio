@@ -23,5 +23,12 @@ namespace AssetStudio
             writer.Write(bytes);
             writer.AlignStream(4);
         }
+
+        public static void WriteStringToNull(this BinaryWriter writer, string str)
+        {
+            var bytes = Encoding.UTF8.GetBytes(str);
+            writer.Write(bytes);
+            writer.Write((byte)0);
+        }
     }
 }

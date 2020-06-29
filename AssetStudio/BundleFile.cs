@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using Lz4;
 
 namespace AssetStudio
@@ -40,6 +41,11 @@ namespace AssetStudio
         private Node[] m_DirectoryInfo;
 
         public StreamFile[] fileList;
+        public List<SerializedFile> assetFiles = new List<SerializedFile>();
+        private byte[] uncompressedDataHashBytes;
+        private byte[] headerSkipBytes;
+        private byte[] writeBlockInfoUncompressedBytes;
+        private byte[] writeBlockInfoCompressedBytes;
 
         public BundleFile(EndianBinaryReader reader, string path)
         {
@@ -68,6 +74,114 @@ namespace AssetStudio
                     }
                     break;
             }
+        }
+
+        public void Write(EndianBinaryWriter writer)
+        {
+            writer.WriteStringToNull(m_Header.signature);
+            switch (m_Header.signature)
+            {
+                case "UnityArchive":
+                case "UnityWeb":
+                case "UnityRaw":
+                    break; //TODO
+                case "UnityFS":
+                    PrepareWriteBytes();
+                    WriteHeader(writer);
+                    WriteBlocksInfoAndDirectory(writer);
+                    break;
+            }
+        }
+
+        private void PrepareWriteBytes()
+        {
+            writeBlockInfoUncompressedBytes = null;
+            writeBlockInfoCompressedBytes = null;
+
+            var uncompressedBytes = new byte[(int)Math.Floor(m_Header.uncompressedBlocksInfoSize * 1.2f)]; // TODO calc length
+            var uncompressedStream = new MemoryStream(uncompressedBytes);
+            var blockInfoWriter = new EndianBinaryWriter(uncompressedStream, EndianType.BigEndian);
+            blockInfoWriter.Write(new byte[16]);
+
+            blockInfoWriter.Write(m_BlocksInfo.Length);
+            for (int i = 0; i < m_BlocksInfo.Length; i++)
+            {
+                var blockInfo = m_BlocksInfo[i];
+                blockInfoWriter.Write(blockInfo.uncompressedSize);
+                blockInfoWriter.Write(blockInfo.compressedSize);
+                blockInfoWriter.Write(blockInfo.flags);
+            }
+
+            blockInfoWriter.Write(m_DirectoryInfo.Length);
+            for (int i = 0; i < m_DirectoryInfo.Length; i++)
+            {
+                var directoryInfo = m_DirectoryInfo[i];
+                blockInfoWriter.Write(directoryInfo.offset);
+                blockInfoWriter.Write(directoryInfo.size);
+                blockInfoWriter.Write(directoryInfo.flags);
+                blockInfoWriter.WriteStringToNull(directoryInfo.path);
+            }
+
+            var isCalcHash = false;
+            for (int i = 0; i < uncompressedDataHashBytes.Length; i++)
+            {
+                if (uncompressedDataHashBytes[i] != 0)
+                {
+                    isCalcHash = true;
+                    break;
+                }
+            }
+            if (isCalcHash)
+            {
+                var position = blockInfoWriter.Position;
+                blockInfoWriter.Position = 0;
+                using (SHA256 sha256Hash = SHA256.Create())
+                {
+                    uncompressedDataHashBytes = sha256Hash.ComputeHash(uncompressedBytes, 0, (int)position);
+                }
+                blockInfoWriter.Write(uncompressedDataHashBytes);
+                blockInfoWriter.Position = position;
+            }
+
+            MemoryStream compressedStream;
+            switch (m_Header.flags & 0x3F) //kArchiveCompressionTypeMask
+            {
+                default: //None
+                    {
+                        compressedStream = uncompressedStream;
+                        break;
+                    }
+                case 1: //LZMA
+                    {
+                        compressedStream = uncompressedStream;
+                        //blocksInfoUncompresseddStream = SevenZipHelper.StreamDecompress(blocksInfoCompressedStream);
+                        //blocksInfoCompressedStream.Close();
+                        // TODO
+                        break;
+                    }
+                case 2: //LZ4
+                case 3: //LZ4HC
+                    {
+                        compressedStream = null;
+                        writeBlockInfoCompressedBytes = LZ4.LZ4Codec.EncodeHC(uncompressedBytes, 0, (int)blockInfoWriter.Position);
+                        break;
+                    }
+            }
+
+            writeBlockInfoUncompressedBytes = new byte[blockInfoWriter.Position];
+            uncompressedStream.Position = 0;
+            uncompressedStream.Read(writeBlockInfoUncompressedBytes, 0, writeBlockInfoUncompressedBytes.Length);
+
+            if (writeBlockInfoCompressedBytes == null)
+            {
+                writeBlockInfoCompressedBytes = writeBlockInfoUncompressedBytes;
+            }
+
+            if (compressedStream != null) compressedStream.Close();
+            if (uncompressedStream != null && uncompressedStream != compressedStream) uncompressedStream.Close();
+
+            //m_Header.uncompressedBlocksInfoSize = (uint)writeBlockInfoUncompressedBytes.Length;
+            //m_Header.compressedBlocksInfoSize = (uint)writeBlockInfoCompressedBytes.Length;
         }
 
         private void ReadHeaderAndBlocksInfo(EndianBinaryReader reader)
@@ -197,6 +311,17 @@ namespace AssetStudio
             m_Header.flags = reader.ReadUInt32();
         }
 
+        private void WriteHeader(EndianBinaryWriter writer)
+        {
+            writer.Write(m_Header.version);
+            writer.WriteStringToNull(m_Header.unityVersion);
+            writer.WriteStringToNull(m_Header.unityRevision);
+            writer.Write(m_Header.size);
+            writer.Write((uint)writeBlockInfoCompressedBytes.Length);
+            writer.Write((uint)writeBlockInfoUncompressedBytes.Length);
+            writer.Write(m_Header.flags);
+        }
+
         private void ReadBlocksInfoAndDirectory(EndianBinaryReader reader)
         {
             byte[] blocksInfoBytes;
@@ -211,7 +336,8 @@ namespace AssetStudio
             {
                 if (m_Header.version >= 7)
                 {
-                    reader.AlignStream(16);
+                    //reader.AlignStream(16);
+                    headerSkipBytes = reader.ReadAlignBytes(16);
                 }
                 blocksInfoBytes = reader.ReadBytes((int)m_Header.compressedBlocksInfoSize);
             }
@@ -244,7 +370,7 @@ namespace AssetStudio
             }
             using (var blocksInfoReader = new EndianBinaryReader(blocksInfoUncompresseddStream))
             {
-                var uncompressedDataHash = blocksInfoReader.ReadBytes(16);
+                uncompressedDataHashBytes = blocksInfoReader.ReadBytes(16);
                 var blocksInfoCount = blocksInfoReader.ReadInt32();
                 m_BlocksInfo = new StorageBlock[blocksInfoCount];
                 for (int i = 0; i < blocksInfoCount; i++)
@@ -270,6 +396,12 @@ namespace AssetStudio
                     };
                 }
             }
+        }
+
+        private void WriteBlocksInfoAndDirectory(EndianBinaryWriter writer)
+        {
+            if (headerSkipBytes != null && headerSkipBytes.Length > 0) writer.Write(headerSkipBytes, 0, headerSkipBytes.Length);
+            writer.Write(writeBlockInfoCompressedBytes);
         }
 
         private void ReadBlocks(EndianBinaryReader reader, Stream blocksStream)
@@ -301,6 +433,11 @@ namespace AssetStudio
                 }
             }
             blocksStream.Position = 0;
+        }
+
+        public void Write(string path)
+        {
+            var fileStream = new FileStream(path, FileMode.OpenOrCreate);
         }
     }
 }

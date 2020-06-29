@@ -22,6 +22,21 @@ namespace AssetStudio
             }
         }
 
+        public static byte[] ReadAlignBytes(this BinaryReader reader, int alignment)
+        {
+            var pos = reader.BaseStream.Position;
+            var mod = pos % alignment;
+            if (mod != 0)
+            {
+                var count = alignment - mod;
+                return reader.ReadBytes((int)count);
+            }
+            else
+            {
+                return new byte[0];
+            }
+        }
+
         public static string ReadAlignedString(this BinaryReader reader)
         {
             var length = reader.ReadInt32();
