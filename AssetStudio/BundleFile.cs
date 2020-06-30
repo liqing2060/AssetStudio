@@ -568,7 +568,27 @@ namespace AssetStudio
 
         public void Recover(BundleFile target)
         {
+            assetFiles = target.assetFiles;
             m_DirectoryInfo = target.m_DirectoryInfo;
+
+            // TEST CODE
+            for (int i = 0; i < assetFiles.Count; i++)
+            {
+                var assetFile = assetFiles[i];
+                var externals = assetFile.m_Externals;
+                for (int j = 0; j < externals.Count; j++)
+                {
+                    var external = externals[j];
+                    external.pathName = external.pathName.Replace("cab-2355ff173a24de1298fad22c6a5a2679", "cab-8f3a5e097b6c0b34cef62da3f48a16f9");
+                    external.fileName = Path.GetFileName(external.pathName);
+
+                    var bytes = System.Text.Encoding.UTF8.GetBytes(external.pathName);
+                    assetFile.reader.Position = assetFile.externalsPathStartPositions[j];
+                    assetFile.reader.BaseStream.Write(bytes, 0, bytes.Length);
+                    assetFile.reader.BaseStream.Write(new byte[] { 0 }, 0, 1);
+                }
+            }
+
             for (int i = 0; i < m_DirectoryInfo.Length; i++)
             {
                 m_DirectoryInfo[i].path = m_DirectoryInfo[i].path.Replace("CAB-18a2b7ce64e494182bc9efa718ec9edc", "CAB-f2d448cee29506788da9402db6443504");
@@ -589,8 +609,6 @@ namespace AssetStudio
                     }
                 }
             }
-
-
         }
     }
 }

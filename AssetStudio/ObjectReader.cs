@@ -37,6 +37,7 @@ namespace AssetStudio
             serializedType = objectInfo.serializedType;
             platform = assetsFile.m_TargetPlatform;
             m_Version = assetsFile.header.m_Version;
+            Console.WriteLine($"type:{type} byteStart:{byteStart} byteSize:{byteSize} byteEnd:{byteStart + byteSize}");
         }
 
         public void Reset()

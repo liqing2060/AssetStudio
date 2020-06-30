@@ -29,6 +29,8 @@ namespace AssetStudio
         private List<LocalSerializedObjectIdentifier> m_ScriptTypes;
         public List<FileIdentifier> m_Externals;
 
+        public long[] externalsPathStartPositions;
+
         public SerializedFile(AssetsManager assetsManager, string fullName, EndianBinaryReader reader)
         {
             this.assetsManager = assetsManager;
@@ -180,6 +182,7 @@ namespace AssetStudio
             }
 
             int externalsCount = reader.ReadInt32();
+            externalsPathStartPositions = new long[externalsCount];
             m_Externals = new List<FileIdentifier>(externalsCount);
             for (int i = 0; i < externalsCount; i++)
             {
@@ -193,6 +196,7 @@ namespace AssetStudio
                     m_External.guid = new Guid(reader.ReadBytes(16));
                     m_External.type = reader.ReadInt32();
                 }
+                externalsPathStartPositions[i] = reader.Position;
                 m_External.pathName = reader.ReadStringToNull();
                 m_External.fileName = Path.GetFileName(m_External.pathName);
                 m_Externals.Add(m_External);

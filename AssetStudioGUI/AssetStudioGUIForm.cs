@@ -386,6 +386,37 @@ namespace AssetStudioGUI
             }
         }
 
+        private void saveUncompressedBundleMenuItem_Click(object sender, EventArgs e)
+        {
+            if (assetsManager.bundleFiles.Count > 0)
+            {
+                var saveBundlePathDialog = new SaveFileDialog();
+                if (saveBundlePathDialog.ShowDialog(this) == DialogResult.OK)
+                {
+                    var bundlePath = saveBundlePathDialog.FileName;
+                    var count = assetsManager.bundleFiles.Count;
+                    int i = 0;
+                    Progress.Reset();
+
+                    System.Collections.IList list = assetsManager.bundleFiles;
+                    for (int i1 = 0; i1 < list.Count; i1++)
+                    {
+                        object item = list[i1];
+                        var bundleFile = (BundleFile)item;
+                        if (bundleFile != null)
+                        {
+                            bundleFile.Recover(bundleFile);
+                            bundleFile.WriteFileUncompress(bundlePath);
+                        }
+
+                        Progress.Report(++i, count);
+                    }
+
+                    StatusStripUpdate($"Finished recover bundle:{bundlePath}");
+                }
+            }
+        }
+
         private void displayAll_CheckedChanged(object sender, EventArgs e)
         {
             Properties.Settings.Default.displayAll = displayAll.Checked;

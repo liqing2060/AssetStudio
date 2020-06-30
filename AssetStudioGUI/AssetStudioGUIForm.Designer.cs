@@ -70,6 +70,7 @@
             this.exportClassStructuresMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.recoverBundleMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveBundleMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveUncompressedBundleMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
@@ -440,7 +441,9 @@
             this.debugMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.exportClassStructuresMenuItem,
             this.recoverBundleMenuItem,
-            this.saveBundleMenuItem});
+            this.saveBundleMenuItem,
+            this.saveUncompressedBundleMenuItem
+            });
             this.debugMenuItem.Name = "debugMenuItem";
             this.debugMenuItem.Size = new System.Drawing.Size(59, 21);
             this.debugMenuItem.Text = "Debug";
@@ -465,6 +468,13 @@
             this.saveBundleMenuItem.Size = new System.Drawing.Size(207, 22);
             this.saveBundleMenuItem.Text = "Save Bundle";
             this.saveBundleMenuItem.Click += new System.EventHandler(this.saveBundleMenuItem_Click);
+            // 
+            // saveBundleMenuItem
+            // 
+            this.saveUncompressedBundleMenuItem.Name = "saveUncompressedBundleMenuItem";
+            this.saveUncompressedBundleMenuItem.Size = new System.Drawing.Size(207, 22);
+            this.saveUncompressedBundleMenuItem.Text = "Save Uncompressed Bundle";
+            this.saveUncompressedBundleMenuItem.Click += new System.EventHandler(this.saveUncompressedBundleMenuItem_Click);
             // 
             // splitContainer1
             // 
@@ -1080,6 +1090,7 @@
         private System.Windows.Forms.ToolStripMenuItem exportClassStructuresMenuItem;
         private System.Windows.Forms.ToolStripMenuItem recoverBundleMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveBundleMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem saveUncompressedBundleMenuItem;
         private System.Windows.Forms.Label FMODcopyright;
         private OpenTK.GLControl glControl1;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;

@@ -107,7 +107,6 @@ namespace AssetStudio
             for (int i = 0; i < m_Dependencies.Length; i++)
             {
                 m_Dependencies[i] = m_Dependencies[i].Replace("cab-2355ff173a24de1298fad22c6a5a2679", "cab-8f3a5e097b6c0b34cef62da3f48a16f9");
-                m_Dependencies[i] = m_Dependencies[i].Replace("cab-50b4441357112d41c70093b0e72473b3", "cab-50b4441357112d41c70093b0e72473b3");
             }
 
             using (var stream = new MemoryStream((int)originByteSize))
