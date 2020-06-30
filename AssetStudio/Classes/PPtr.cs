@@ -17,6 +17,12 @@ namespace AssetStudio
             assetsFile = reader.assetsFile;
         }
 
+        public void Write(EndianBinaryWriter writer, uint version)
+        {
+            writer.Write(m_FileID);
+            if (version < 14) writer.Write((int)m_PathID); else writer.Write(m_PathID);
+        }
+
         private bool TryGetAssetsFile(out SerializedFile result)
         {
             result = null;

@@ -18,10 +18,20 @@ namespace AssetStudio
             set => BaseStream.Position = value;
         }
 
+        public bool NeedReverse(EndianType endian)
+        {
+            return BitConverter.IsLittleEndian != (endian == EndianType.LittleEndian);
+        }
+
+        public bool NeedReverse()
+        {
+            return NeedReverse(endian);
+        }
+
         public override void Write(short value)
         {
             var buff = BitConverter.GetBytes(value);
-            if (endian == EndianType.BigEndian)
+            if (NeedReverse())
             {
                 Array.Reverse(buff);
             }
@@ -31,7 +41,7 @@ namespace AssetStudio
         public override void Write(int value)
         {
             var buff = BitConverter.GetBytes(value);
-            if (endian == EndianType.BigEndian)
+            if (NeedReverse())
             {
                 Array.Reverse(buff);
             }
@@ -41,7 +51,7 @@ namespace AssetStudio
         public void Write(int value, EndianType endian)
         {
             var buff = BitConverter.GetBytes(value);
-            if (endian == EndianType.BigEndian)
+            if (NeedReverse(endian))
             {
                 Array.Reverse(buff);
             }
@@ -51,7 +61,7 @@ namespace AssetStudio
         public override void Write(long value)
         {
             var buff = BitConverter.GetBytes(value);
-            if (endian == EndianType.BigEndian)
+            if (NeedReverse())
             {
                 Array.Reverse(buff);
             }
@@ -61,7 +71,7 @@ namespace AssetStudio
         public override void Write(ushort value)
         {
             var buff = BitConverter.GetBytes(value);
-            if (endian == EndianType.BigEndian)
+            if (NeedReverse())
             {
                 Array.Reverse(buff);
             }
@@ -71,7 +81,7 @@ namespace AssetStudio
         public override void Write(uint value)
         {
             var buff = BitConverter.GetBytes(value);
-            if (endian == EndianType.BigEndian)
+            if (NeedReverse())
             {
                 Array.Reverse(buff);
             }
@@ -81,7 +91,7 @@ namespace AssetStudio
         public override void Write(ulong value)
         {
             var buff = BitConverter.GetBytes(value);
-            if (endian == EndianType.BigEndian)
+            if (NeedReverse())
             {
                 Array.Reverse(buff);
             }
@@ -91,7 +101,7 @@ namespace AssetStudio
         public override void Write(float value)
         {
             var buff = BitConverter.GetBytes(value);
-            if (endian == EndianType.BigEndian)
+            if (NeedReverse())
             {
                 Array.Reverse(buff);
             }
@@ -101,7 +111,7 @@ namespace AssetStudio
         public override void Write(double value)
         {
             var buff = BitConverter.GetBytes(value);
-            if (endian == EndianType.BigEndian)
+            if (NeedReverse())
             {
                 Array.Reverse(buff);
             }

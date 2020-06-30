@@ -367,29 +367,18 @@ namespace AssetStudioGUI
                     int i = 0;
                     Progress.Reset();
 
-                    using (var fileStream = new FileStream(bundlePath, FileMode.Create))
+                    System.Collections.IList list = assetsManager.bundleFiles;
+                    for (int i1 = 0; i1 < list.Count; i1++)
                     {
-                        using (var writer = new EndianBinaryWriter(fileStream, EndianType.BigEndian))
+                        object item = list[i1];
+                        var bundleFile = (BundleFile)item;
+                        if (bundleFile != null)
                         {
-                            System.Collections.IList list = assetsManager.bundleFiles;
-                            for (int i1 = 0; i1 < list.Count; i1++)
-                            {
-                                object item = list[i1];
-                                var bundleFile = (BundleFile)item;
-                                if (bundleFile != null)
-                                {
-                                    bundleFile.Write(writer);
-                                }
-
-                                //var versionPath = bundlePath + "\\" + item.Group.Header;
-                                //Directory.CreateDirectory(versionPath);
-
-                                //var saveFile = $"{versionPath}\\{item.SubItems[1].Text} {item.Text}.txt";
-                                //File.WriteAllText(saveFile, item.ToString());
-
-                                Progress.Report(++i, count);
-                            }
+                            bundleFile.Recover(bundleFile);
+                            bundleFile.WriteFile(bundlePath);
                         }
+
+                        Progress.Report(++i, count);
                     }
 
                     StatusStripUpdate($"Finished recover bundle:{bundlePath}");

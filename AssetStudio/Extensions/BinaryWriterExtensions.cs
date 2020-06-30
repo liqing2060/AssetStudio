@@ -24,6 +24,15 @@ namespace AssetStudio
             writer.AlignStream(4);
         }
 
+        public static void WriteAlignedString(this EndianBinaryWriter writer, string str, EndianType endian)
+        {
+            var bytes = Encoding.UTF8.GetBytes(str);
+            if (endian == EndianType.BigEndian) writer.AlignStream(4);
+            writer.Write(bytes.Length, endian);
+            writer.Write(bytes);
+            if (endian == EndianType.LittleEndian) writer.AlignStream(4);
+        }
+
         public static void WriteStringToNull(this BinaryWriter writer, string str)
         {
             var bytes = Encoding.UTF8.GetBytes(str);
